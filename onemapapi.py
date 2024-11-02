@@ -3,20 +3,20 @@ import json
 import cv2
 import time as t
 
-pic = cv2.imread('..\singaporemap.png')
+pic = cv2.imread('singaporemap.png')
 token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJlMDE5MzA0NGYyOTA5ZjY5YTRmMTllY2QxYjg0YWZkOCIsImlzcyI6Imh0dHA6Ly9pbnRlcm5hbC1hbGItb20tcHJkZXppdC1pdC1uZXctMTYzMzc5OTU0Mi5hcC1zb3V0aGVhc3QtMS5lbGIuYW1hem9uYXdzLmNvbS9hcGkvdjIvdXNlci9wYXNzd29yZCIsImlhdCI6MTczMDUyMjEyMiwiZXhwIjoxNzMwNzgxMzIyLCJuYmYiOjE3MzA1MjIxMjIsImp0aSI6IlFDQVNMcmczS2pvT3hPUzciLCJ1c2VyX2lkIjo1MDg3LCJmb3JldmVyIjpmYWxzZX0.YAYhwIROdd1uRkTsQc3LQ090XyoaED-_28Nd0PUQg1s"
 
 
 # Reference markers
 # image size = (1200, 675), origin in top left
 
-pic = cv2.circle(pic,(600,40),3,(0,0,255),2)
+# pic = cv2.circle(pic,(600,40),3,(0,0,255),2)
 # 1.470556, 103.817222
 # "Y": 50232.13700006985,
 # "X": 26208.723300821424
 # (600,40)
 
-pic = cv2.circle(pic,(534,483),3,(0,0,255),2)
+# pic = cv2.circle(pic,(534,483),3,(0,0,255),2)
 # 1.254994, 103.785515
 # "Y": 26396.431464672696,
 # "X": 22679.797214726106
@@ -31,7 +31,16 @@ pic = cv2.circle(pic,(534,483),3,(0,0,255),2)
 # Y / -53.80520436884234 + 973.5925323454103
 
 
+trees = open('treelandmark.txt','r')
+treedata = trees.readlines()
 
+for tree in treedata:
+    # data = tree.strip().split(" ")
+    # print(data)
+    name, lat, lng, coordx, coordy = tree.strip().split(",")
+    x = float(coordx) / 53.46857706205027 + 109.82942242120629
+    y = float(coordy) / -53.80520436884234 + 973.5925323454103
+    cv2.circle(pic, (int(x),int(y)), 1, (0,0,255), 1)
 
       
 # Coord conversion API
@@ -44,8 +53,9 @@ pic = cv2.circle(pic,(534,483),3,(0,0,255),2)
 # url = "https://www.onemap.gov.sg/api/public/themesvc/getThemeInfo?queryName="
 
 
-# cv2.imshow("Singapore Map",pic)
-# cv2.waitKey(0)
+cv2.imshow("Singapore Map",pic)
+cv2.waitKey(0)
+cv2.imwrite("singaporetrees.png",pic)
 
 
 
@@ -89,7 +99,7 @@ pic = cv2.circle(pic,(534,483),3,(0,0,255),2)
 #     place.append(resp['X'])
 #     place.append(resp['Y'])
 #     print(f"{place[0]} {place[1]} {place[2]} {place[3]} {place[4]}")
-#     f.write(f"{place[0]} {place[1]} {place[2]} {place[3]} {place[4]}\n")
+#     f.write(f"{place[0]},{place[1]},{place[2]},{place[3]},{place[4]}\n")
 #     t.sleep(0.1)
 
 # f.close()
