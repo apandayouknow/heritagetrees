@@ -40,6 +40,7 @@ trees = open('treelandmark.txt','r')
 treedata = trees.readlines()
 treelist = []
 pairedtrees = []
+lonelyrad = 300 / 52.86350931175258
 
 for tree in treedata:
     # data = tree.strip().split(" ")
@@ -48,9 +49,9 @@ for tree in treedata:
     x = float(coordx) / 53.46857706205027 + 109.82942242120629
     y = float(coordy) / -53.80520436884234 + 973.5925323454103
     treelist.append([name,lat,lng,coordx,coordy,x,y])
-    cv2.circle(copy, (int(x),int(y)), 11, (0,0,255), cv2.FILLED,8,0)
+    cv2.circle(copy, (int(x),int(y)), m.floor(lonelyrad), (180,100,80), cv2.FILLED,16,0)
 
-threshold_distance = 11
+threshold_distance = lonelyrad * 2
 
 # Create a list to store pairs of points that are within the threshold distance
 close_points = []
@@ -70,6 +71,11 @@ for i, tree1 in enumerate(treelist):
 
 lonelytrees = [tree for tree in treelist if tree not in pairedtrees]
 print(len(lonelytrees))
+
+lonelytreemap = copy.copy()
+
+for tree in lonelytrees:
+    cv2.circle(lonelytreemap, (int(tree[5]),int(tree[6])), m.floor(lonelyrad), (0,0,255), cv2.FILLED,16,0 )
       
 # Coord conversion API
 # url = "https://www.onemap.gov.sg/api/common/convert/4326to3414?latitude=1.254994&longitude=103.785515"
@@ -80,12 +86,17 @@ print(len(lonelytrees))
 # url = "https://www.onemap.gov.sg/api/public/themesvc/getAllThemesInfo?moreInfo=Y"
 # url = "https://www.onemap.gov.sg/api/public/themesvc/getThemeInfo?queryName="
 
-alpha = 0.4  # Transparency factor
-image_new = cv2.addWeighted(copy, alpha, pic, 1 - alpha, 0)
+alpha = 0.6  # Transparency factor
+alltrees = cv2.addWeighted(copy, alpha, pic, 1 - alpha, 0)
 
-cv2.imshow("Singapore Map",image_new)
+beta = 0.6
+lonelytreees = cv2.addWeighted(lonelytreemap, beta, pic, 1 - beta, 0)
+
+cv2.imshow("Singapore Map",alltrees)
+cv2.imshow("Lonely Tree Map", lonelytreees)
 cv2.waitKey(0)
-cv2.imwrite("singaporetrees.png",image_new)
+cv2.imwrite("singaporetrees.png",alltrees)
+cv2.imwrite("lonelysgtrees.png",lonelytreees)
 
 
 
