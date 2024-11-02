@@ -2,8 +2,11 @@ import requests
 import json
 import cv2
 import time as t
+import math as m
+import numpy as np
 
 pic = cv2.imread('singaporemap.png')
+copy = pic.copy()
 token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJlMDE5MzA0NGYyOTA5ZjY5YTRmMTllY2QxYjg0YWZkOCIsImlzcyI6Imh0dHA6Ly9pbnRlcm5hbC1hbGItb20tcHJkZXppdC1pdC1uZXctMTYzMzc5OTU0Mi5hcC1zb3V0aGVhc3QtMS5lbGIuYW1hem9uYXdzLmNvbS9hcGkvdjIvdXNlci9wYXNzd29yZCIsImlhdCI6MTczMDUyMjEyMiwiZXhwIjoxNzMwNzgxMzIyLCJuYmYiOjE3MzA1MjIxMjIsImp0aSI6IlFDQVNMcmczS2pvT3hPUzciLCJ1c2VyX2lkIjo1MDg3LCJmb3JldmVyIjpmYWxzZX0.YAYhwIROdd1uRkTsQc3LQ090XyoaED-_28Nd0PUQg1s"
 
 
@@ -30,9 +33,13 @@ token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJlMDE5MzA0NGYyOTA5ZjY5YT
 # 50232.13700006985 / -53.80520436884234 - 40 = d
 # Y / -53.80520436884234 + 973.5925323454103
 
+# dist btwn reference points; 24.20 km
+# pixel dist = 24200 / m.sqrt((600-534)**2+(483-30)**2) = 52.86350931175258
 
 trees = open('treelandmark.txt','r')
 treedata = trees.readlines()
+treelist = []
+pairedtrees = []
 
 for tree in treedata:
     # data = tree.strip().split(" ")
@@ -40,8 +47,29 @@ for tree in treedata:
     name, lat, lng, coordx, coordy = tree.strip().split(",")
     x = float(coordx) / 53.46857706205027 + 109.82942242120629
     y = float(coordy) / -53.80520436884234 + 973.5925323454103
-    cv2.circle(pic, (int(x),int(y)), 1, (0,0,255), 1)
+    treelist.append([name,lat,lng,coordx,coordy,x,y])
+    cv2.circle(copy, (int(x),int(y)), 11, (0,0,255), cv2.FILLED,8,0)
 
+threshold_distance = 11
+
+# Create a list to store pairs of points that are within the threshold distance
+close_points = []
+
+# Loop through each point and compare with every other point
+for i, tree1 in enumerate(treelist):
+    for j, tree2 in enumerate(treelist[i+1:], start=i+1):
+        # Calculate Euclidean distance
+        distance = cv2.norm(np.array([tree1[5],tree1[6]]) - np.array([tree2[5],tree2[6]]))
+        
+        # Check if the distance is within the threshold
+        if distance <= threshold_distance:
+            if tree1 not in pairedtrees:
+                pairedtrees.append(tree1)
+            if tree2 not in pairedtrees:
+                pairedtrees.append(tree2)
+
+lonelytrees = [tree for tree in treelist if tree not in pairedtrees]
+print(len(lonelytrees))
       
 # Coord conversion API
 # url = "https://www.onemap.gov.sg/api/common/convert/4326to3414?latitude=1.254994&longitude=103.785515"
@@ -52,10 +80,12 @@ for tree in treedata:
 # url = "https://www.onemap.gov.sg/api/public/themesvc/getAllThemesInfo?moreInfo=Y"
 # url = "https://www.onemap.gov.sg/api/public/themesvc/getThemeInfo?queryName="
 
+alpha = 0.4  # Transparency factor
+image_new = cv2.addWeighted(copy, alpha, pic, 1 - alpha, 0)
 
-cv2.imshow("Singapore Map",pic)
+cv2.imshow("Singapore Map",image_new)
 cv2.waitKey(0)
-cv2.imwrite("singaporetrees.png",pic)
+cv2.imwrite("singaporetrees.png",image_new)
 
 
 
