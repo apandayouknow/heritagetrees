@@ -36,6 +36,8 @@ token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJlMDE5MzA0NGYyOTA5ZjY5YT
 # dist btwn reference points; 24.20 km
 # pixel dist = 24200 / m.sqrt((600-534)**2+(483-30)**2) = 52.86350931175258
 
+# testing
+
 trees = open('treelandmark.txt','r')
 treedata = trees.readlines()
 treelist = []
